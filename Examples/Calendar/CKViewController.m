@@ -40,7 +40,7 @@
         self.dateLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, CGRectGetMaxY(calendar.frame) + 4, self.view.bounds.size.width, 24)];
         [self.view addSubview:self.dateLabel];
 
-        self.view.backgroundColor = [UIColor whiteColor];
+        self.view.backgroundColor = [UIColor darkGrayColor];
 
         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(localeDidChange) name:NSCurrentLocaleDidChangeNotification object:nil];
     }
@@ -106,7 +106,7 @@
 
 - (BOOL)calendar:(CKCalendarView *)calendar willChangeToMonth:(NSDate *)date {
     if ([date laterDate:self.minimumDate] == date) {
-        self.calendar.backgroundColor = [UIColor blueColor];
+        self.calendar.backgroundColor = [UIColor clearColor];
         return YES;
     } else {
         self.calendar.backgroundColor = [UIColor redColor];
