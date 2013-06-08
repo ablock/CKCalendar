@@ -17,7 +17,7 @@
 - (id)init {
     self = [super init];
     if (self) {
-        CKCalendarView *calendar = [[CKCalendarView alloc] initWithStartDay:startMonday];
+        CKCalendarView *calendar = [[CKCalendarView alloc] initWithStartDay:startSunday];
         self.calendar = calendar;
         calendar.delegate = self;
 
@@ -32,9 +32,9 @@
         ];
 
         calendar.onlyShowCurrentMonth = NO;
-        calendar.adaptHeightToNumberOfWeeksInMonth = YES;
+        calendar.adaptHeightToNumberOfWeeksInMonth = NO;
 
-        calendar.frame = CGRectMake(10, 10, 300, 320);
+        calendar.frame = CGRectMake(10, 10, 301, 320);
         [self.view addSubview:calendar];
 
         self.dateLabel = [[UILabel alloc] initWithFrame:CGRectMake(10, CGRectGetMaxY(calendar.frame) + 4, self.view.bounds.size.width, 24)];
@@ -88,12 +88,9 @@
 #pragma mark -
 #pragma mark - CKCalendarDelegate
 
-- (void)calendar:(CKCalendarView *)calendar configureDateItem:(CKDateItem *)dateItem forDate:(NSDate *)date {
-    // TODO: play with the coloring if we want to...
-    if ([self dateIsDisabled:date]) {
-        dateItem.backgroundColor = [UIColor redColor];
-        dateItem.textColor = [UIColor whiteColor];
-    }
+- (void)calendar:(CKCalendarView *)calendar configureDateButton:(CKDateButton *)dateButton forDate:(NSDate *)date
+{
+    
 }
 
 - (BOOL)calendar:(CKCalendarView *)calendar willSelectDate:(NSDate *)date {
