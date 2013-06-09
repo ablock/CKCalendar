@@ -37,11 +37,18 @@ typedef enum {
     CKDateButtonStyleSelected,
 } CKDateButtonStyle;
 
+typedef enum {
+    CKDateButtonPositionLeft,
+    CKDateButtonPositionCenter,
+    CKDateButtonPositionRight
+} CKDateButtonPosition;
+
 @interface CKDateButton ()
 
 @property (nonatomic, strong) NSDate *date;
 @property (nonatomic, strong) NSCalendar *calendar;
 @property (nonatomic) CKDateButtonStyle buttonStyle;
+@property (nonatomic) CKDateButtonPosition buttonPosition;
 
 @end
 
@@ -57,14 +64,11 @@ typedef enum {
     [self setTitle:dateString forState:UIControlStateNormal];
 }
 
-- (void)setStyle:(CKDateButtonStyle)style
+- (void)configureWithStyle:(CKDateButtonStyle)style position:(CKDateButtonPosition)position
 {
     self.buttonStyle = style;
-    [self configureUI];
-}
-
-- (void)configureUI
-{
+    self.buttonPosition = position;
+    
     switch (self.buttonStyle) {
         case CKDateButtonStyleNotCurrentMonth:
             self.backgroundColor = [UIColor colorWithRed:0.878431 green:0.890196 blue:0.894118 alpha:1];
@@ -110,21 +114,40 @@ typedef enum {
     CGContextStrokePath(context);
     
     CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.729412 green:0.745098 blue:0.745098 alpha:1].CGColor);
-    CGContextMoveToPoint(context, self.frame.size.width, 1);
-    CGContextAddLineToPoint(context, self.frame.size.width, self.frame.size.height);
+    
+    if (self.buttonPosition != CKDateButtonPositionRight) {
+        CGContextMoveToPoint(context, self.frame.size.width, 1);
+        CGContextAddLineToPoint(context, self.frame.size.width, self.frame.size.height);
+    } else {
+        CGContextMoveToPoint(context, self.frame.size.width, self.frame.size.height);
+    }
     CGContextAddLineToPoint(context, 0, self.frame.size.height);
     CGContextStrokePath(context);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1].CGColor);
-    CGContextMoveToPoint(context, 0, self.frame.size.height - 1);
-    CGContextAddLineToPoint(context, 0, 0);
-    CGContextStrokePath(context);
+    if (self.buttonPosition != CKDateButtonPositionLeft) {
+        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1].CGColor);
+        CGContextMoveToPoint(context, 0, self.frame.size.height - 1);
+        CGContextAddLineToPoint(context, 0, 0);
+        CGContextStrokePath(context);
+    }
 }
 
 - (void)drawTodayStyleBordersInContext:(CGContextRef)context
 {
     CGColorRef color = [UIColor colorWithRed:0.494118 green:0.494118 blue:0.494118 alpha:1].CGColor;
     [self drawFrameWithLineWidth:2.0 color:color context:context];
+    
+    CGContextSetLineWidth(context, 0.5);
+    
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.588235 green:0.592157 blue:0.592157 alpha:1].CGColor);
+    CGContextMoveToPoint(context, 1, 1);
+    CGContextAddLineToPoint(context, self.frame.size.width - 1, 1);
+    CGContextStrokePath(context);
+    
+    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.725490 green:0.733333 blue:0.733333 alpha:1].CGColor);
+    CGContextMoveToPoint(context, 1, 1.5);
+    CGContextAddLineToPoint(context, self.frame.size.width - 1, 1.5);
+    CGContextStrokePath(context);
 }
 
 - (void)drawSelectedStyleBordersInContext:(CGContextRef)context
@@ -283,20 +306,21 @@ typedef enum {
     titleLabelButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabelButton.titleLabel.backgroundColor = [UIColor clearColor];
     titleLabelButton.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
+    [titleLabelButton addTarget:self action:@selector(selectToday) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:titleLabelButton];
     self.titleLabelButton = titleLabelButton;
     
     UIButton *prevButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [prevButton setImage:[UIImage imageNamed:@"left_arrow.png"] forState:UIControlStateNormal];
     prevButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
-    [prevButton addTarget:self action:@selector(_moveCalendarToPreviousMonth) forControlEvents:UIControlEventTouchUpInside];
+    [prevButton addTarget:self action:@selector(moveCalendarToPreviousMonth) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:prevButton];
     self.prevButton = prevButton;
     
     UIButton *nextButton = [UIButton buttonWithType:UIButtonTypeCustom];
     [nextButton setImage:[UIImage imageNamed:@"right_arrow.png"] forState:UIControlStateNormal];
     nextButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
-    [nextButton addTarget:self action:@selector(_moveCalendarToNextMonth) forControlEvents:UIControlEventTouchUpInside];
+    [nextButton addTarget:self action:@selector(moveCalendarToNextMonth) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:nextButton];
     self.nextButton = nextButton;
 }
@@ -339,6 +363,7 @@ typedef enum {
     
     [self.titleLabelButton setTitle:[self.dateFormatter stringFromDate:_monthShowing] forState:UIControlStateNormal];
     self.titleLabelButton.frame = CGRectMake(0, 0, self.bounds.size.width, TOP_HEIGHT);
+    
     self.prevButton.frame = CGRectMake(BUTTON_MARGIN, BUTTON_MARGIN, 48, 38);
     self.nextButton.frame = CGRectMake(self.bounds.size.width - 48 - BUTTON_MARGIN, BUTTON_MARGIN, 48, 38);
     
@@ -370,22 +395,30 @@ typedef enum {
     }
     
     NSDate *buttonDate = date;
-    NSUInteger dateButtonPosition = 0;
+    NSUInteger dateButtonOrder = 0;
     while ([buttonDate laterDate:endDate] != buttonDate) {
-        CKDateButton *dateButton = [self.dateButtons objectAtIndex:dateButtonPosition];
+        CKDateButton *dateButton = [self.dateButtons objectAtIndex:dateButtonOrder];
+        CKDateButtonPosition position;
+        if (dateButtonOrder % 7 == 0) {
+            position = CKDateButtonPositionLeft;
+        } else if (dateButtonOrder % 7 == 6) {
+            position = CKDateButtonPositionRight;
+        } else {
+            position = CKDateButtonPositionCenter;
+        }
         
         dateButton.date = buttonDate;
         CGRect dateButtonFrame = [self calculateDayCellFrame:buttonDate];
         dateButton.frame = dateButtonFrame;
         
         if (!self.onlyShowCurrentMonth && [self compareByMonth:buttonDate toDate:self.monthShowing] != NSOrderedSame) {
-            [dateButton setStyle:CKDateButtonStyleNotCurrentMonth];
+            [dateButton configureWithStyle:CKDateButtonStyleNotCurrentMonth position:position];
         } else if (self.selectedDate && [self date:self.selectedDate isSameDayAsDate:buttonDate]) {
-            [dateButton setStyle:CKDateButtonStyleSelected];
+            [dateButton configureWithStyle:CKDateButtonStyleSelected position:position];;
         } else if ([self dateIsToday:buttonDate]) {
-            [dateButton setStyle:CKDateButtonStyleToday];
+            [dateButton configureWithStyle:CKDateButtonStyleToday position:position];;
         } else {
-            [dateButton setStyle:CKDateButtonStyleCurrentMonth];
+            [dateButton configureWithStyle:CKDateButtonStyleCurrentMonth position:position];;
         }
         
         // let delegate do any additional configuration
@@ -396,7 +429,7 @@ typedef enum {
         [self.calendarContainer addSubview:dateButton];
         
         buttonDate = [self nextDay:buttonDate];
-        dateButtonPosition++;
+        dateButtonOrder++;
     }
     
     if ([self.delegate respondsToSelector:@selector(calendar:didLayoutInRect:)]) {
@@ -472,6 +505,10 @@ typedef enum {
 }
 
 - (void)selectDate:(NSDate *)date makeVisible:(BOOL)visible {
+    if (visible && date) {
+        self.monthShowing = date;
+    }
+    
     NSMutableArray *datesToReload = [NSMutableArray array];
     if (self.selectedDate) {
         [datesToReload addObject:self.selectedDate];
@@ -481,9 +518,13 @@ typedef enum {
     }
     self.selectedDate = date;
     [self reloadDates:datesToReload];
-    if (visible && date) {
-        self.monthShowing = date;
-    }
+    
+    [self.delegate calendar:self didSelectDate:date];
+}
+
+- (void)selectToday
+{
+    [self selectDate:[NSDate date] makeVisible:YES];
 }
 
 - (void)reloadData {
@@ -516,7 +557,7 @@ typedef enum {
     return frame;
 }
 
-- (void)_moveCalendarToNextMonth {
+- (void)moveCalendarToNextMonth {
     NSDateComponents* comps = [[NSDateComponents alloc] init];
     [comps setMonth:1];
     NSDate *newMonth = [self.calendar dateByAddingComponents:comps toDate:self.monthShowing options:0];
@@ -530,7 +571,7 @@ typedef enum {
     }
 }
 
-- (void)_moveCalendarToPreviousMonth {
+- (void)moveCalendarToPreviousMonth {
     NSDateComponents* comps = [[NSDateComponents alloc] init];
     [comps setMonth:-1];
     NSDate *newMonth = [self.calendar dateByAddingComponents:comps toDate:self.monthShowing options:0];
@@ -542,6 +583,11 @@ typedef enum {
             [self.delegate calendar:self didChangeToMonth:self.monthShowing];
         }
     }
+}
+
+- (void)moveCalendarToCurrentMonth
+{
+    self.monthShowing = [NSDate date];
 }
 
 - (void)dateButtonPressed:(id)sender {
