@@ -20,7 +20,7 @@
 #import <QuartzCore/QuartzCore.h>
 #import "CKCalendarView.h"
 
-#define BUTTON_MARGIN 0
+#define BUTTON_MARGIN 6
 #define CALENDAR_MARGIN 0
 #define TOP_HEIGHT 29
 #define DAYS_HEADER_HEIGHT 19
@@ -171,11 +171,100 @@ typedef enum {
 @end
 
 
+typedef enum {
+    CKArrowButtonDirectionLeft,
+    CKArrowButtonDirectionRight
+} CKArrowButtonDirection;
+
+@interface CKArrowButton : UIButton
+
+@property (nonatomic) CKArrowButtonDirection direction;
+@property (nonatomic) BOOL useGradient;
+@property (nonatomic, strong) UIColor *arrowColor;
+@property (nonatomic, strong) UIColor *topColor;
+@property (nonatomic, strong) UIColor *bottomColor;
+
+@end
+
+@implementation CKArrowButton
+
+- (id)initWithDirection:(CKArrowButtonDirection)direction topColor:(UIColor *)topColor bottomColor:(UIColor *)bottomColor height:(CGFloat)height
+{
+    self = [super init];
+    if (self) {
+        self.direction = direction;
+        self.useGradient = YES;
+        self.topColor = topColor;
+        self.bottomColor = bottomColor;
+        [self setImage:[self arrowImageWithHeight:height] forState:UIControlStateNormal];
+    }
+    return self;
+}
+
+- (id)initWithDirection:(CKArrowButtonDirection)direction color:(UIColor *)color height:(CGFloat)height
+{
+    self = [super init];
+    if (self) {
+        self.direction = direction;
+        self.arrowColor = color;
+        [self setImage:[self arrowImageWithHeight:height] forState:UIControlStateNormal];
+    }
+    return self;
+}
+
+- (UIImage *)arrowImageWithHeight:(CGFloat)height
+{
+    CGFloat width = floorf(height * 0.72);
+    CGSize size = CGSizeMake(width, height);
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    if (self.direction == CKArrowButtonDirectionRight) {
+        [path moveToPoint:CGPointMake(0, 0)];
+        [path addLineToPoint:CGPointMake(width, height / 2.0f)];
+        [path addLineToPoint:CGPointMake(0, height)];
+    } else {
+        [path moveToPoint:CGPointMake(width, 0)];
+        [path addLineToPoint:CGPointMake(0, height / 2.0f)];
+        [path addLineToPoint:CGPointMake(width, height)];
+    }
+    [path closePath];
+    
+    if (self.useGradient) {
+        [path addClip];
+        
+        CGColorSpaceRef colorSpace = CGColorSpaceCreateDeviceRGB();
+        CGFloat locations[] = { 0.0, 1.0 };
+        CGColorRef colors[] = { self.topColor.CGColor, self.bottomColor.CGColor };
+        CFArrayRef colorsArr = CFArrayCreate(NULL, (const void **)colors, sizeof(colors) / sizeof(CGColorRef), &kCFTypeArrayCallBacks);
+        CGGradientRef gradient = CGGradientCreateWithColors(colorSpace, colorsArr, locations);
+        
+        CGPoint startPoint = CGPointMake(0, 0);
+        CGPoint endPoint = CGPointMake(0, height);
+        
+        CGContextRef context = UIGraphicsGetCurrentContext();
+        CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, 0);
+        
+        CGGradientRelease(gradient);
+        CGColorSpaceRelease(colorSpace);
+    } else {
+        [self.arrowColor setFill];
+        [path fill];
+    }
+    
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return result;
+}
+
+@end
+
+
 @interface CKCalendarView ()
 
 @property(nonatomic, strong) UIButton *titleLabelButton;
-@property(nonatomic, strong) UIButton *prevButton;
-@property(nonatomic, strong) UIButton *nextButton;
+@property(nonatomic, strong) CKArrowButton *prevButton;
+@property(nonatomic, strong) CKArrowButton *nextButton;
 @property(nonatomic, strong) UIView *calendarContainer;
 @property(nonatomic, strong) UIImageView *daysHeader;
 @property(nonatomic, strong) NSArray *dayOfWeekLabels;
@@ -305,21 +394,20 @@ typedef enum {
     titleLabelButton.showsTouchWhenHighlighted = YES;
     titleLabelButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabelButton.titleLabel.backgroundColor = [UIColor clearColor];
-    titleLabelButton.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
+    //titleLabelButton.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
     [titleLabelButton addTarget:self action:@selector(selectToday) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:titleLabelButton];
     self.titleLabelButton = titleLabelButton;
     
-    UIButton *prevButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [prevButton setImage:[UIImage imageNamed:@"left_arrow.png"] forState:UIControlStateNormal];
-    prevButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleRightMargin;
+    UIColor *topColor = [UIColor colorWithRed:0.270588 green:0.682353 blue:0.968628 alpha:1];
+    UIColor *bottomColor = [UIColor colorWithRed:0 green:0.466667 blue:0.792157 alpha:1];
+    
+    CKArrowButton *prevButton = [[CKArrowButton alloc] initWithDirection:CKArrowButtonDirectionLeft topColor:topColor bottomColor:bottomColor height:18.0];
     [prevButton addTarget:self action:@selector(moveCalendarToPreviousMonth) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:prevButton];
     self.prevButton = prevButton;
     
-    UIButton *nextButton = [UIButton buttonWithType:UIButtonTypeCustom];
-    [nextButton setImage:[UIImage imageNamed:@"right_arrow.png"] forState:UIControlStateNormal];
-    nextButton.autoresizingMask = UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleLeftMargin;
+    CKArrowButton *nextButton = [[CKArrowButton alloc] initWithDirection:CKArrowButtonDirectionRight topColor:topColor bottomColor:bottomColor height:18.0];
     [nextButton addTarget:self action:@selector(moveCalendarToNextMonth) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:nextButton];
     self.nextButton = nextButton;
@@ -362,10 +450,11 @@ typedef enum {
     self.frame = newFrame;
     
     [self.titleLabelButton setTitle:[self.dateFormatter stringFromDate:_monthShowing] forState:UIControlStateNormal];
-    self.titleLabelButton.frame = CGRectMake(0, 0, self.bounds.size.width, TOP_HEIGHT);
+    self.titleLabelButton.frame = CGRectMake((self.bounds.size.width - 150) / 2, 1, 150, TOP_HEIGHT - 1);
     
-    self.prevButton.frame = CGRectMake(BUTTON_MARGIN, BUTTON_MARGIN, 48, 38);
-    self.nextButton.frame = CGRectMake(self.bounds.size.width - 48 - BUTTON_MARGIN, BUTTON_MARGIN, 48, 38);
+    
+    self.prevButton.frame = CGRectMake(BUTTON_MARGIN, BUTTON_MARGIN, 13, 18);
+    self.nextButton.frame = CGRectMake(self.bounds.size.width - 13 - BUTTON_MARGIN, BUTTON_MARGIN, 13, 18);
     
     self.calendarContainer.frame = CGRectMake(CALENDAR_MARGIN, CGRectGetMaxY(self.titleLabelButton.frame), containerWidth, containerHeight);
     self.daysHeader.frame = CGRectMake(0, 0, self.calendarContainer.frame.size.width, DAYS_HEADER_HEIGHT);
