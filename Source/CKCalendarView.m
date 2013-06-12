@@ -49,6 +49,8 @@ typedef enum {
 @property (nonatomic, strong) NSCalendar *calendar;
 @property (nonatomic) CKDateButtonStyle buttonStyle;
 @property (nonatomic) CKDateButtonPosition buttonPosition;
+@property (nonatomic, strong) UIImage *markerImage;
+@property (nonatomic, strong) UIView *markerContainer;
 
 @end
 
@@ -62,6 +64,40 @@ typedef enum {
         dateString = [NSMutableString stringWithFormat:@"  %@", dateString];
     }
     [self setTitle:dateString forState:UIControlStateNormal];
+}
+
+- (void)setEventCount:(NSInteger)eventCount
+{
+    if (eventCount > 0 && self.markerContainer == nil) {
+        UIView *markerContainer = [[UIView alloc] initWithFrame:CGRectMake(2.0, 3.0, 39.0, 5.0)];
+        markerContainer.backgroundColor = [UIColor clearColor];
+        self.markerContainer = markerContainer;
+        [self addSubview:self.markerContainer];
+    }
+    if (eventCount > 0 && eventCount < 8) {
+        if (!self.markerImage) {
+            UIImage *markerImage = [self markerImageWithColor:[UIColor colorWithRed:0.094118 green:0.474510 blue:0.788235 alpha:1]];
+            self.markerImage = markerImage;
+        }
+        for (NSInteger i = 0; i < eventCount; i++) {
+            UIImageView *markerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(i * 6.0, 0, 5.0, 5.0)];
+            markerImageView.image = self.markerImage;
+            [self.markerContainer addSubview:markerImageView];
+        }
+    }
+}
+
+- (UIImage *)markerImageWithColor:(UIColor *)color
+{
+    CGSize size = CGSizeMake(5.0, 5.0);
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    CGRect rect = CGRectMake(0, 0, size.width, size.height);
+    UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:rect];
+    [color setFill];
+    [path fill];
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return result;
 }
 
 - (void)configureWithStyle:(CKDateButtonStyle)style position:(CKDateButtonPosition)position

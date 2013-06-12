@@ -90,7 +90,7 @@
 
 - (void)calendar:(CKCalendarView *)calendar configureDateButton:(CKDateButton *)dateButton forDate:(NSDate *)date
 {
-    
+    [dateButton setEventCount:6];
 }
 
 - (BOOL)calendar:(CKCalendarView *)calendar willSelectDate:(NSDate *)date {
