@@ -27,6 +27,7 @@
 #define DEFAULT_CELL_WIDTH 43
 #define DEFAULT_CELL_HEIGHT 33
 #define CELL_BORDER_WIDTH 0
+#define MARKER_COLOR [UIColor colorWithRed:0.094118 green:0.474510 blue:0.788235 alpha:1]
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
@@ -68,23 +69,43 @@ typedef enum {
 
 - (void)setEventCount:(NSInteger)eventCount
 {
-    if (eventCount > 0 && self.markerContainer == nil) {
-        UIView *markerContainer = [[UIView alloc] initWithFrame:CGRectMake(2.0, 3.0, 39.0, 5.0)];
+    _eventCount = eventCount;
+    
+    if (self.markerContainer != nil) {
+        [self.markerContainer removeFromSuperview];
+        self.markerContainer = nil;
+    }
+    if (eventCount > 0) {
+        UIView *markerContainer = [[UIView alloc] initWithFrame:CGRectMake(2.5, 3.0, 39.0, 5.0)];
         markerContainer.backgroundColor = [UIColor clearColor];
         self.markerContainer = markerContainer;
         [self addSubview:self.markerContainer];
-    }
-    if (eventCount > 0 && eventCount < 8) {
-        if (!self.markerImage) {
-            UIImage *markerImage = [self markerImageWithColor:[UIColor colorWithRed:0.094118 green:0.474510 blue:0.788235 alpha:1]];
-            self.markerImage = markerImage;
-        }
-        for (NSInteger i = 0; i < eventCount; i++) {
-            UIImageView *markerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(i * 6.0, 0, 5.0, 5.0)];
-            markerImageView.image = self.markerImage;
-            [self.markerContainer addSubview:markerImageView];
+        
+        if (eventCount < 8) {
+            [self drawMarkers];
+        } else if (eventCount > 7) {
+            [self drawMarkerBar];
         }
     }
+}
+
+- (void)drawMarkers
+{
+    if (!self.markerImage) {
+        UIImage *markerImage = [self markerImageWithColor:MARKER_COLOR];
+        self.markerImage = markerImage;
+    }
+    for (NSInteger i = 0; i < self.eventCount; i++) {
+        UIImageView *markerImageView = [[UIImageView alloc] initWithFrame:CGRectMake(i * 5.5, 0, 4.5, 4.5)];
+        markerImageView.image = self.markerImage;
+        [self.markerContainer addSubview:markerImageView];
+    }
+}
+
+- (void)drawMarkerBar
+{
+    UIImageView *markerBarImageView = [[UIImageView alloc] initWithImage:[self markerBarImageWithColor:MARKER_COLOR]];
+    [self.markerContainer addSubview:markerBarImageView];
 }
 
 - (UIImage *)markerImageWithColor:(UIColor *)color
@@ -93,6 +114,28 @@ typedef enum {
     UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
     CGRect rect = CGRectMake(0, 0, size.width, size.height);
     UIBezierPath *path = [UIBezierPath bezierPathWithOvalInRect:rect];
+    [color setFill];
+    [path fill];
+    UIImage *result = UIGraphicsGetImageFromCurrentImageContext();
+    UIGraphicsEndImageContext();
+    return result;
+}
+
+- (UIImage *)markerBarImageWithColor:(UIColor *)color
+{
+    CGFloat width = 38.0;
+    CGFloat height = 5.0;
+    
+    CGSize size = CGSizeMake(width, height);
+    UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
+    
+    UIBezierPath *path = [UIBezierPath bezierPath];
+    [path moveToPoint:CGPointMake(height / 2, 0.0)];
+    [path addLineToPoint:CGPointMake(width - (height / 2), 0.0)];
+    [path addArcWithCenter:CGPointMake(width - (height / 2), height / 2) radius:(height / 2) startAngle:(1.5 * M_PI) endAngle:(0.5 * M_PI) clockwise:YES];
+    [path addLineToPoint:CGPointMake(height / 2, height)];
+    [path addArcWithCenter:CGPointMake(height / 2, height / 2) radius:(height / 2) startAngle:(0.5 * M_PI) endAngle:(1.5 * M_PI) clockwise:YES];
+    
     [color setFill];
     [path fill];
     UIImage *result = UIGraphicsGetImageFromCurrentImageContext();

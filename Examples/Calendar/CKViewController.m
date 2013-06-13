@@ -90,7 +90,8 @@
 
 - (void)calendar:(CKCalendarView *)calendar configureDateButton:(CKDateButton *)dateButton forDate:(NSDate *)date
 {
-    [dateButton setEventCount:6];
+    
+    [dateButton setEventCount:(arc4random() % 9)];
 }
 
 - (BOOL)calendar:(CKCalendarView *)calendar willSelectDate:(NSDate *)date {
