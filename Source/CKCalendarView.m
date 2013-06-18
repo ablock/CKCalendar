@@ -187,12 +187,14 @@ typedef enum {
 {
     CGContextSetLineWidth(context, 2.0);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1].CGColor);
+    UIColor *lightBorderUIColor = [UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1];
+    CGContextSetStrokeColorWithColor(context, lightBorderUIColor.CGColor);
     CGContextMoveToPoint(context, 0, 0);
     CGContextAddLineToPoint(context, self.frame.size.width, 0);
     CGContextStrokePath(context);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.729412 green:0.745098 blue:0.745098 alpha:1].CGColor);
+    UIColor *darkBorderUIColor = [UIColor colorWithRed:0.729412 green:0.745098 blue:0.745098 alpha:1];
+    CGContextSetStrokeColorWithColor(context, darkBorderUIColor.CGColor);
     
     if (self.buttonPosition != CKDateButtonPositionRight) {
         CGContextMoveToPoint(context, self.frame.size.width, 1);
@@ -204,7 +206,7 @@ typedef enum {
     CGContextStrokePath(context);
     
     if (self.buttonPosition != CKDateButtonPositionLeft) {
-        CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1].CGColor);
+        CGContextSetStrokeColorWithColor(context, lightBorderUIColor.CGColor);
         CGContextMoveToPoint(context, 0, self.frame.size.height - 1);
         CGContextAddLineToPoint(context, 0, 0);
         CGContextStrokePath(context);
@@ -213,17 +215,19 @@ typedef enum {
 
 - (void)drawTodayStyleBordersInContext:(CGContextRef)context
 {
-    CGColorRef color = [UIColor colorWithRed:0.494118 green:0.494118 blue:0.494118 alpha:1].CGColor;
-    [self drawFrameWithLineWidth:2.0 color:color context:context];
+    UIColor *frameUIColor = [UIColor colorWithRed:0.494118 green:0.494118 blue:0.494118 alpha:1];
+    [self drawFrameWithLineWidth:2.0 color:frameUIColor.CGColor context:context];
     
     CGContextSetLineWidth(context, 0.5);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.588235 green:0.592157 blue:0.592157 alpha:1].CGColor);
+    UIColor *shadow1UIColor = [UIColor colorWithRed:0.588235 green:0.592157 blue:0.592157 alpha:1];
+    CGContextSetStrokeColorWithColor(context, shadow1UIColor.CGColor);
     CGContextMoveToPoint(context, 1, 1);
     CGContextAddLineToPoint(context, self.frame.size.width - 1, 1);
     CGContextStrokePath(context);
     
-    CGContextSetStrokeColorWithColor(context, [UIColor colorWithRed:0.725490 green:0.733333 blue:0.733333 alpha:1].CGColor);
+    UIColor *shadow2UIColor =[UIColor colorWithRed:0.725490 green:0.733333 blue:0.733333 alpha:1];
+    CGContextSetStrokeColorWithColor(context, shadow2UIColor.CGColor);
     CGContextMoveToPoint(context, 1, 1.5);
     CGContextAddLineToPoint(context, self.frame.size.width - 1, 1.5);
     CGContextStrokePath(context);
@@ -231,8 +235,8 @@ typedef enum {
 
 - (void)drawSelectedStyleBordersInContext:(CGContextRef)context
 {
-    CGColorRef color = [UIColor colorWithRed:0.011765 green:0.423529 blue:0.631373 alpha:1].CGColor;
-    [self drawFrameWithLineWidth:5.0 color:color context:context];
+    UIColor *color = [UIColor colorWithRed:0.011765 green:0.423529 blue:0.631373 alpha:1];
+    [self drawFrameWithLineWidth:5.0 color:color.CGColor context:context];
 }
 
 - (void)drawFrameWithLineWidth:(CGFloat)lineWidth color:(CGColorRef)color context:(CGContextRef)context
@@ -608,7 +612,6 @@ typedef enum {
 - (void)removeAllDateButtons
 {
     for (CKDateButton *dateButton in self.dateButtons) {
-        dateButton.date = nil;
         [dateButton removeFromSuperview];
     }
 }
