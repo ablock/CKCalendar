@@ -174,88 +174,77 @@ typedef enum {
 {
     [super drawRect:rect];
     
-    CGContextRef context = UIGraphicsGetCurrentContext();
-    
     switch (self.buttonStyle) {
-        case CKDateButtonStyleToday: [self drawTodayStyleBordersInContext:context]; break;
-        case CKDateButtonStyleSelected: [self drawSelectedStyleBordersInContext:context]; break;
-        default: [self drawDefaultBordersInContext:context];
+        case CKDateButtonStyleToday: [self drawTodayStyleBorders]; break;
+        case CKDateButtonStyleSelected: [self drawSelectedStyleBorders]; break;
+        default: [self drawDefaultBorders];
     }
 }
 
-- (void)drawDefaultBordersInContext:(CGContextRef)context
+- (void)drawDefaultBorders
 {
-    CGContextSetLineWidth(context, 2.0);
+    UIBezierPath *lightBorderPath = [UIBezierPath bezierPath];
+    [lightBorderPath moveToPoint:CGPointMake(0, 0)];
+    [lightBorderPath addLineToPoint:CGPointMake(self.frame.size.width, 0)];
+    UIColor *lightBorderColor = [UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1];
+    [lightBorderPath setLineWidth:2.0];
     
-    CGColorRef lightBorderColor = CGColorRetain([UIColor colorWithRed:0.952941 green:0.956863 blue:0.960784 alpha:1].CGColor);
-    CGContextSetStrokeColorWithColor(context, lightBorderColor);
-    
-    CGContextMoveToPoint(context, 0, 0);
-    CGContextAddLineToPoint(context, self.frame.size.width, 0);
-    CGContextStrokePath(context);
-    
-    CGColorRef darkBorderColor = CGColorRetain([UIColor colorWithRed:0.729412 green:0.745098 blue:0.745098 alpha:1].CGColor);
-    CGContextSetStrokeColorWithColor(context, darkBorderColor);
-    
+    UIBezierPath *darkBorderPath = [UIBezierPath bezierPath];
+    UIColor *darkBorderColor = [UIColor colorWithRed:0.729412 green:0.745098 blue:0.745098 alpha:1];
     if (self.buttonPosition != CKDateButtonPositionRight) {
-        CGContextMoveToPoint(context, self.frame.size.width, 1);
-        CGContextAddLineToPoint(context, self.frame.size.width, self.frame.size.height);
+        [darkBorderPath moveToPoint:CGPointMake(self.frame.size.width, 1)];
+        [darkBorderPath addLineToPoint:CGPointMake(self.frame.size.width, self.frame.size.height)];
     } else {
-        CGContextMoveToPoint(context, self.frame.size.width, self.frame.size.height);
+        [darkBorderPath moveToPoint:CGPointMake(self.frame.size.width, self.frame.size.height)];
     }
-    CGContextAddLineToPoint(context, 0, self.frame.size.height);
-    CGContextStrokePath(context);
+    [darkBorderPath addLineToPoint:CGPointMake(0, self.frame.size.height)];
+    [darkBorderPath setLineWidth:2.0];
+    [darkBorderColor setStroke];
+    [darkBorderPath stroke];
     
     if (self.buttonPosition != CKDateButtonPositionLeft) {
-        CGContextSetStrokeColorWithColor(context, lightBorderColor);
-        CGContextMoveToPoint(context, 0, self.frame.size.height - 1);
-        CGContextAddLineToPoint(context, 0, 0);
-        CGContextStrokePath(context);
+        [lightBorderPath moveToPoint:CGPointMake(0, self.frame.size.height - 1)];
+        [lightBorderPath addLineToPoint:CGPointMake(0, 0)];
     }
     
-    CGColorRelease(lightBorderColor);
-    CGColorRelease(darkBorderColor);
+    [lightBorderColor setStroke];
+    [lightBorderPath stroke];
 }
 
-- (void)drawTodayStyleBordersInContext:(CGContextRef)context
+- (void)drawTodayStyleBorders
 {
-    CGColorRef frameColor = CGColorRetain([UIColor colorWithRed:0.494118 green:0.494118 blue:0.494118 alpha:1].CGColor);
-    [self drawFrameWithLineWidth:2.0 color:frameColor context:context];
-    CGColorRelease(frameColor);
-    CGContextSetLineWidth(context, 0.5);
+    UIColor *frameColor = [UIColor colorWithRed:0.494118 green:0.494118 blue:0.494118 alpha:1];
+    [self drawFrameWithLineWidth:2.0 color:frameColor];
     
-    CGColorRef shadow1Color = CGColorRetain([UIColor colorWithRed:0.588235 green:0.592157 blue:0.592157 alpha:1].CGColor);
-    CGContextSetStrokeColorWithColor(context, shadow1Color);
-    CGColorRelease(shadow1Color);
-    CGContextMoveToPoint(context, 1, 1);
-    CGContextAddLineToPoint(context, self.frame.size.width - 1, 1);
-    CGContextStrokePath(context);
+    UIColor *shadow1Color = [UIColor colorWithRed:0.588235 green:0.592157 blue:0.592157 alpha:1];
+    UIColor *shadow2Color = [UIColor colorWithRed:0.725490 green:0.733333 blue:0.733333 alpha:1];
     
-    CGColorRef shadow2Color = CGColorRetain([UIColor colorWithRed:0.725490 green:0.733333 blue:0.733333 alpha:1].CGColor);
-    CGContextSetStrokeColorWithColor(context, shadow2Color);
-    CGColorRelease(shadow2Color);
-    CGContextMoveToPoint(context, 1, 1.5);
-    CGContextAddLineToPoint(context, self.frame.size.width - 1, 1.5);
-    CGContextStrokePath(context);
+    UIBezierPath *shadowPath = [UIBezierPath bezierPath];
+    [shadowPath setLineWidth:0.5];
+    
+    [shadowPath moveToPoint:CGPointMake(1, 1)];
+    [shadowPath addLineToPoint:CGPointMake(self.frame.size.width - 1, 1)];
+    [shadow1Color setStroke];
+    [shadowPath stroke];
+    
+    [shadowPath moveToPoint:CGPointMake(1, 1.5)];
+    [shadowPath addLineToPoint:CGPointMake(self.frame.size.width - 1, 1.5)];
+    [shadow2Color setStroke];
+    [shadowPath stroke];
 }
 
-- (void)drawSelectedStyleBordersInContext:(CGContextRef)context
+- (void)drawSelectedStyleBorders
 {
-    CGColorRef color = CGColorRetain([UIColor colorWithRed:0.011765 green:0.423529 blue:0.631373 alpha:1].CGColor);
-    [self drawFrameWithLineWidth:5.0 color:color context:context];
-    CGColorRelease(color);
+    UIColor *color = [UIColor colorWithRed:0.011765 green:0.423529 blue:0.631373 alpha:1];
+    [self drawFrameWithLineWidth:5.0 color:color];
 }
 
-- (void)drawFrameWithLineWidth:(CGFloat)lineWidth color:(CGColorRef)color context:(CGContextRef)context
+- (void)drawFrameWithLineWidth:(CGFloat)lineWidth color:(UIColor *)color
 {
-    CGContextSetLineWidth(context, lineWidth);
-    CGContextSetStrokeColorWithColor(context, color);
-    CGContextMoveToPoint(context, 0, 0);
-    CGContextAddLineToPoint(context, self.frame.size.width, 0);
-    CGContextAddLineToPoint(context, self.frame.size.width, self.frame.size.height);
-    CGContextAddLineToPoint(context, 0, self.frame.size.height);
-    CGContextAddLineToPoint(context, 0, 0);
-    CGContextStrokePath(context);
+    UIBezierPath *path = [UIBezierPath bezierPathWithRect:CGRectMake(0, 0, self.frame.size.width, self.frame.size.height)];
+    [path setLineWidth:lineWidth];
+    [color setStroke];
+    [path stroke];
 }
 
 @end
