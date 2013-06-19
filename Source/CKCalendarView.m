@@ -28,6 +28,8 @@
 #define DEFAULT_CELL_HEIGHT 33
 #define CELL_BORDER_WIDTH 0
 #define MARKER_COLOR [UIColor colorWithRed:0.094118 green:0.474510 blue:0.788235 alpha:1]
+#define ARROW_BUTTON_WIDTH 50
+#define ARROW_BUTTON_HEIGHT 18
 
 #define UIColorFromRGB(rgbValue) [UIColor colorWithRed:((float)((rgbValue & 0xFF0000) >> 16))/255.0 green:((float)((rgbValue & 0xFF00) >> 8))/255.0 blue:((float)(rgbValue & 0xFF))/255.0 alpha:1.0]
 
@@ -267,7 +269,7 @@ typedef enum {
 
 @implementation CKArrowButton
 
-- (id)initWithDirection:(CKArrowButtonDirection)direction topColor:(UIColor *)topColor bottomColor:(UIColor *)bottomColor height:(CGFloat)height
+- (id)initWithDirection:(CKArrowButtonDirection)direction topColor:(UIColor *)topColor bottomColor:(UIColor *)bottomColor height:(CGFloat)height width:(CGFloat)width
 {
     self = [super init];
     if (self) {
@@ -275,37 +277,37 @@ typedef enum {
         self.useGradient = YES;
         self.topColor = topColor;
         self.bottomColor = bottomColor;
-        [self setImage:[self arrowImageWithHeight:height] forState:UIControlStateNormal];
+        [self setImage:[self arrowImageWithHeight:height width:width] forState:UIControlStateNormal];
     }
     return self;
 }
 
-- (id)initWithDirection:(CKArrowButtonDirection)direction color:(UIColor *)color height:(CGFloat)height
+- (id)initWithDirection:(CKArrowButtonDirection)direction color:(UIColor *)color height:(CGFloat)height width:(CGFloat)width
 {
     self = [super init];
     if (self) {
         self.direction = direction;
         self.arrowColor = color;
-        [self setImage:[self arrowImageWithHeight:height] forState:UIControlStateNormal];
+        [self setImage:[self arrowImageWithHeight:height width:width] forState:UIControlStateNormal];
     }
     return self;
 }
 
-- (UIImage *)arrowImageWithHeight:(CGFloat)height
+- (UIImage *)arrowImageWithHeight:(CGFloat)height width:(CGFloat)width
 {
-    CGFloat width = floorf(height * 0.72);
+    CGFloat arrowWidth = floorf(height * 0.72);
     CGSize size = CGSizeMake(width, height);
     UIGraphicsBeginImageContextWithOptions(size, NO, 0.0);
     
     UIBezierPath *path = [UIBezierPath bezierPath];
     if (self.direction == CKArrowButtonDirectionRight) {
-        [path moveToPoint:CGPointMake(0, 0)];
+        [path moveToPoint:CGPointMake(width - arrowWidth, 0)];
         [path addLineToPoint:CGPointMake(width, height / 2.0f)];
-        [path addLineToPoint:CGPointMake(0, height)];
+        [path addLineToPoint:CGPointMake(width - arrowWidth, height)];
     } else {
-        [path moveToPoint:CGPointMake(width, 0)];
+        [path moveToPoint:CGPointMake(arrowWidth, 0)];
         [path addLineToPoint:CGPointMake(0, height / 2.0f)];
-        [path addLineToPoint:CGPointMake(width, height)];
+        [path addLineToPoint:CGPointMake(arrowWidth, height)];
     }
     [path closePath];
     
@@ -467,13 +469,11 @@ typedef enum {
 
 - (void)setupHeader
 {
-    // SET UP THE HEADER
     UIButton *titleLabelButton = [UIButton buttonWithType:UIButtonTypeCustom];
     titleLabelButton.backgroundColor = [UIColor clearColor];
     titleLabelButton.showsTouchWhenHighlighted = YES;
     titleLabelButton.titleLabel.textAlignment = NSTextAlignmentCenter;
     titleLabelButton.titleLabel.backgroundColor = [UIColor clearColor];
-    //titleLabelButton.titleLabel.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleWidth;
     [titleLabelButton addTarget:self action:@selector(selectToday) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:titleLabelButton];
     self.titleLabelButton = titleLabelButton;
@@ -481,12 +481,12 @@ typedef enum {
     UIColor *topColor = [UIColor colorWithRed:0.270588 green:0.682353 blue:0.968628 alpha:1];
     UIColor *bottomColor = [UIColor colorWithRed:0 green:0.466667 blue:0.792157 alpha:1];
     
-    CKArrowButton *prevButton = [[CKArrowButton alloc] initWithDirection:CKArrowButtonDirectionLeft topColor:topColor bottomColor:bottomColor height:18.0];
+    CKArrowButton *prevButton = [[CKArrowButton alloc] initWithDirection:CKArrowButtonDirectionLeft topColor:topColor bottomColor:bottomColor height:ARROW_BUTTON_HEIGHT width:ARROW_BUTTON_WIDTH];
     [prevButton addTarget:self action:@selector(moveCalendarToPreviousMonth) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:prevButton];
     self.prevButton = prevButton;
     
-    CKArrowButton *nextButton = [[CKArrowButton alloc] initWithDirection:CKArrowButtonDirectionRight topColor:topColor bottomColor:bottomColor height:18.0];
+    CKArrowButton *nextButton = [[CKArrowButton alloc] initWithDirection:CKArrowButtonDirectionRight topColor:topColor bottomColor:bottomColor height:ARROW_BUTTON_HEIGHT width:ARROW_BUTTON_WIDTH];
     [nextButton addTarget:self action:@selector(moveCalendarToNextMonth) forControlEvents:UIControlEventTouchUpInside];
     [self addSubview:nextButton];
     self.nextButton = nextButton;
@@ -532,8 +532,8 @@ typedef enum {
     self.titleLabelButton.frame = CGRectMake((self.bounds.size.width - 150) / 2, 1, 150, TOP_HEIGHT - 1);
     
     
-    self.prevButton.frame = CGRectMake(BUTTON_MARGIN, BUTTON_MARGIN, 13, 18);
-    self.nextButton.frame = CGRectMake(self.bounds.size.width - 13 - BUTTON_MARGIN, BUTTON_MARGIN, 13, 18);
+    self.prevButton.frame = CGRectMake(BUTTON_MARGIN, BUTTON_MARGIN, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
+    self.nextButton.frame = CGRectMake(self.bounds.size.width - ARROW_BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_MARGIN, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
     
     self.calendarContainer.frame = CGRectMake(CALENDAR_MARGIN, CGRectGetMaxY(self.titleLabelButton.frame), containerWidth, containerHeight);
     self.daysHeader.frame = CGRectMake(0, 0, self.calendarContainer.frame.size.width, DAYS_HEADER_HEIGHT);
