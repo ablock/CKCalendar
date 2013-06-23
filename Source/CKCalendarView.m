@@ -22,7 +22,7 @@
 
 #define BUTTON_MARGIN 6
 #define CALENDAR_MARGIN 0
-#define TOP_HEIGHT 29
+#define TOP_HEIGHT 23
 #define DAYS_HEADER_HEIGHT 19
 #define DEFAULT_CELL_WIDTH 43
 #define DEFAULT_CELL_HEIGHT 33
@@ -525,20 +525,18 @@ typedef enum {
     CGFloat containerHeight = (numberOfWeeksToShow * (self.cellHeight + CELL_BORDER_WIDTH) + DAYS_HEADER_HEIGHT);
     
     CGRect newFrame = self.frame;
-    newFrame.size.height = containerHeight + CALENDAR_MARGIN + TOP_HEIGHT;
+    newFrame.size.height = containerHeight + CALENDAR_MARGIN + TOP_HEIGHT - 2;
     self.frame = newFrame;
     
     [self.titleLabelButton setTitle:[self.dateFormatter stringFromDate:_monthShowing] forState:UIControlStateNormal];
-    self.titleLabelButton.frame = CGRectMake((self.bounds.size.width - 150) / 2, 1, 150, TOP_HEIGHT - 1);
+    self.titleLabelButton.frame = CGRectMake((self.bounds.size.width - 150) / 2, 0, 150, TOP_HEIGHT - 5);
     
+    self.prevButton.frame = CGRectMake(BUTTON_MARGIN, 0, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
+    self.nextButton.frame = CGRectMake(self.bounds.size.width - ARROW_BUTTON_WIDTH - BUTTON_MARGIN, 0, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
     
-    self.prevButton.frame = CGRectMake(BUTTON_MARGIN, BUTTON_MARGIN, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
-    self.nextButton.frame = CGRectMake(self.bounds.size.width - ARROW_BUTTON_WIDTH - BUTTON_MARGIN, BUTTON_MARGIN, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
-    
-    self.calendarContainer.frame = CGRectMake(CALENDAR_MARGIN, CGRectGetMaxY(self.titleLabelButton.frame), containerWidth, containerHeight);
+    self.calendarContainer.frame = CGRectMake(CALENDAR_MARGIN, CGRectGetMaxY(self.prevButton.frame) + 3, containerWidth, containerHeight);
     self.daysHeader.frame = CGRectMake(0, 0, self.calendarContainer.frame.size.width, DAYS_HEADER_HEIGHT);
     self.daysHeader.image = [self daysHeaderBackgroundImage];
-    
     
     CGRect lastDayFrame = CGRectZero;
     for (UILabel *dayLabel in self.dayOfWeekLabels) {
@@ -659,6 +657,7 @@ typedef enum {
 - (void)setMonthShowing:(NSDate *)aMonthShowing {
     _monthShowing = [self firstDayOfMonthContainingDate:aMonthShowing];
     [self setNeedsLayout];
+    [self layoutIfNeeded];
 }
 
 - (void)setOnlyShowCurrentMonth:(BOOL)onlyShowCurrentMonth {
@@ -685,8 +684,6 @@ typedef enum {
     }
     self.selectedDate = date;
     [self reloadDates:datesToReload];
-    
-    [self.delegate calendar:self didSelectDate:date];
 }
 
 - (void)selectToday
@@ -771,8 +768,8 @@ typedef enum {
     }
     
     [self selectDate:date makeVisible:YES];
+    [self layoutIfNeeded]; // Use in place of setNeedsLayout to ensure that any container resizing is done before the delegate call below is made
     [self.delegate calendar:self didSelectDate:date];
-    [self setNeedsLayout];
 }
 
 #pragma mark - Theming getters/setters
