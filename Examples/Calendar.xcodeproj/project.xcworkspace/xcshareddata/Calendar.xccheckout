@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>IDESourceControlProjectIdentifier</key>
+	<string>907161A4-C131-4869-AE54-044920A565B6</string>
+	<key>IDESourceControlProjectName</key>
+	<string>Calendar</string>
+	<key>IDESourceControlProjectOriginsDictionary</key>
+	<dict>
+		<key>B7ACBDEF-7FA4-47C9-A9B5-A462424D2E31</key>
+		<string>ssh://github.com/ablock/CKCalendar.git</string>
+	</dict>
+	<key>IDESourceControlProjectPath</key>
+	<string>Examples/Calendar.xcodeproj/project.xcworkspace</string>
+	<key>IDESourceControlProjectRelativeInstallPathDictionary</key>
+	<dict>
+		<key>B7ACBDEF-7FA4-47C9-A9B5-A462424D2E31</key>
+		<string>../../..</string>
+	</dict>
+	<key>IDESourceControlProjectURL</key>
+	<string>https://github.com/ablock/Breeze.git</string>
+	<key>IDESourceControlProjectVersion</key>
+	<integer>110</integer>
+	<key>IDESourceControlProjectWCCIdentifier</key>
+	<string>B7ACBDEF-7FA4-47C9-A9B5-A462424D2E31</string>
+	<key>IDESourceControlProjectWCConfigurations</key>
+	<array>
+		<dict>
+			<key>IDESourceControlRepositoryExtensionIdentifierKey</key>
+			<string>public.vcs.git</string>
+			<key>IDESourceControlWCCIdentifierKey</key>
+			<string>B7ACBDEF-7FA4-47C9-A9B5-A462424D2E31</string>
+			<key>IDESourceControlWCCName</key>
+			<string>CKCalendar</string>
+		</dict>
+	</array>
+</dict>
+</plist>
