@@ -386,6 +386,7 @@ typedef enum {
     self.calendarStartDay = firstDay;
     self.onlyShowCurrentMonth = YES;
     self.adaptHeightToNumberOfWeeksInMonth = YES;
+    self.canDeselect = YES;
     
     [self setupHeader];
     
@@ -759,7 +760,7 @@ typedef enum {
 - (void)dateButtonPressed:(id)sender {
     CKDateButton *dateButton = sender;
     NSDate *date = dateButton.date;
-    if ([date isEqualToDate:self.selectedDate]) {
+    if ([date isEqualToDate:self.selectedDate] && self.canDeselect) {
         // deselection..
         if ([self.delegate respondsToSelector:@selector(calendar:willDeselectDate:)] && ![self.delegate calendar:self willDeselectDate:date]) {
             return;
@@ -769,9 +770,11 @@ typedef enum {
         return;
     }
     
-    [self selectDate:date makeVisible:YES];
-    [self layoutIfNeeded]; // Use in place of setNeedsLayout to ensure that any container resizing is done before the delegate call below is made
-    [self.delegate calendar:self didSelectDate:date];
+    if ([date isEqualToDate:self.selectedDate] == NO) {
+        [self selectDate:date makeVisible:YES];
+        [self layoutIfNeeded]; // Use in place of setNeedsLayout to ensure that any container resizing is done before the delegate call below is made
+        [self.delegate calendar:self didSelectDate:date];
+    }
 }
 
 #pragma mark - Theming getters/setters

@@ -35,6 +35,7 @@ typedef enum {
 @property (nonatomic, readonly) NSArray *datesShowing;
 @property (nonatomic) BOOL onlyShowCurrentMonth;
 @property (nonatomic) BOOL adaptHeightToNumberOfWeeksInMonth;
+@property (nonatomic) BOOL canDeselect;
 @property (nonatomic, weak) id<CKCalendarDelegate> delegate;
 @property (nonatomic, strong) UIFont *titleFont;
 @property (nonatomic, strong) UIColor *titleColor;
