@@ -529,7 +529,7 @@ typedef enum {
     self.frame = newFrame;
     
     [self.titleLabelButton setTitle:[self.dateFormatter stringFromDate:_monthShowing] forState:UIControlStateNormal];
-    self.titleLabelButton.frame = CGRectMake((self.bounds.size.width - 150) / 2, 0, 150, TOP_HEIGHT - 5);
+    self.titleLabelButton.frame = CGRectMake((self.bounds.size.width - 150) / 2, 0, 150, TOP_HEIGHT - 6);
     
     self.prevButton.frame = CGRectMake(BUTTON_MARGIN, 0, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
     self.nextButton.frame = CGRectMake(self.bounds.size.width - ARROW_BUTTON_WIDTH - BUTTON_MARGIN, 0, ARROW_BUTTON_WIDTH, ARROW_BUTTON_HEIGHT);
@@ -688,7 +688,9 @@ typedef enum {
 
 - (void)selectToday
 {
-    [self selectDate:[NSDate date] makeVisible:YES];
+    NSDate *today = [NSDate date];
+    [self selectDate:today makeVisible:YES];
+    [self.delegate calendar:self didSelectDate:today];
 }
 
 - (void)reloadData {
